@@ -1,10 +1,17 @@
 ---
 layout: post
-title: You're up and running!
+title: Welcome to my personal website!
 ---
 
-Next you can update your site name, avatar and other options using the _config.yml file in the root of your repository (shown below).
+👋 Hi, I’m Alessandro Colazzo
 
-![_config.yml]({{ site.baseurl }}/images/config.png)
+👀 I’m interested in signal processing for telecommunications (5G NR, LTE, NB-IoT) and IoT
 
-The easiest way to make your first post is to edit this one. Go into /_posts/ and update the Hello World markdown file. For more instructions head over to the [Jekyll Now repository](https://github.com/barryclark/jekyll-now) on GitHub.
+🌱 I’m currently learning C++ and machine learning
+
+💞️ I’m looking to collaborate on machine learning applied to physical layer processing of wireless protocols
+
+✅ Have a look on my [Publications](https://colazzoa.github.io/publications) !
+
+📫 Reach me on [Linkedin](https://www.linkedin.com/in/alessandrocolazzo)
+
