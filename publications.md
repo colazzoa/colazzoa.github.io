@@ -4,12 +4,12 @@ title: Publications
 permalink: /publications/
 ---
 
-This is the list of publications I contributed to. Where possible link to the documents are available (last checked on 26/3/2022)!
+This is the list of publications I contributed to in the past. Where possible public link to the documents are available (last check on 26/3/2022)!
 
 ## 2018
 
 ### [5G CORAL Connected Cars Taiwan Trial Nov 2018](https://www.youtube.com/watch?v=5e8OWrCYPpQ) 
-Nov, 20128, 5G CORAL Connected Car video demo for the intermediate Taiwan trials
+Nov, 2018, 5G CORAL Connected Car video demo for the intermediate Taiwan trials
 
 ### [5G CORAL D1.2 5G-CORAL business perspectives](https://www.ec.europa.eu/research/participants/documents/downloadPublic?documentIds=080166e5bd51d0e5&appId=PPGMS)
 Aug 31, 2018
@@ -31,10 +31,10 @@ Feb 28, 2018
 ### [5G NORMA D6.2 Demonstrator design, implementation and final results](https://www.it.uc3m.es/wnl/5gnorma/pdf/5g_norma_d6-2.pdf)
 Nov 30, 2017
 
-### [5G NORMA D4.2 RAN architecture components – Final report](https://www.it.uc3m.es/wnl/5gnorma/pdf/5g_norma_d4-2.pdf)
+### [5G NORMA D4.2 RAN Architecture components – Final report](https://www.it.uc3m.es/wnl/5gnorma/pdf/5g_norma_d4-2.pdf)
 June 30, 2017
 
-### [5G innovations for new business opportunities5G innovations for new business opportunities](https://hal.inria.fr/hal-01488208/document)
+### [5G innovations for new business opportunities](https://hal.inria.fr/hal-01488208/document)
 5G Infrastructure Association, Feb 1, 2017
 
 ## 2016
