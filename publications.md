@@ -6,11 +6,25 @@ permalink: /publications/
 
 This is the list of publications I contributed to. Where possible link to the documents are available (last checked on 26/3/2022)!
 
-### More information
-
-This is a test!
-
 ## 2018
+
+### [5G CORAL Connected Cars Taiwan Trial Nov 2018](https://www.youtube.com/watch?v=5e8OWrCYPpQ) 
+Nov, 20128, 5G CORAL Connected Car video demo for the intermediate Taiwan trials
+
+### [5G CORAL D1.2 5G-CORAL business perspectives](https://www.ec.europa.eu/research/participants/documents/downloadPublic?documentIds=080166e5bd51d0e5&appId=PPGMS)
+Aug 31, 2018
+
+### [An Integrated, Virtualized Joint Edge and Fog Computing System with Multi-RAT ConvergenceAn Integrated, Virtualized Joint Edge and Fog Computing System with Multi-RAT Convergence](https://ieeexplore.ieee.org/abstract/document/8436927)
+IEEE · Jun 6, 2018
+
+### [5G CORAL D2.1 Initial design of 5G-CORAL Edge and Fog computing system](https://www.ec.europa.eu/research/participants/documents/downloadPublic?documentIds=080166e5bb1b5f94&appId=PPGMS)
+Jun 1, 2018
+
+### [5G-CORAL D4.1 Testbed definition, integration and demonstration plans](https://www.ec.europa.eu/research/participants/documents/downloadPublic?documentIds=080166e5bd4eb7bc&appId=PPGMS)
+May 27, 2018
+
+### [5G-CORAL D1.1 Initial system design, use cases, and requirements](https://ec.europa.eu/research/participants/documents/downloadPublic?documentIds=080166e5b8e62111&appId=PPGMS)
+Feb 28, 2018
 
 ## 2017
 
