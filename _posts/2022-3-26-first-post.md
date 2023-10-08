@@ -7,7 +7,7 @@ title: Welcome to my personal website!
 
 👀 I’m interested in signal processing for telecommunications (5G NR, LTE, NB-IoT) and IoT
 
-🌱 I’m currently learning machine learning applied to the telco domain and playing with a tiny SDR radio (at a very low place though).
+🌱 I’m currently learning machine learning applied to the telco domain and playing with a tiny SDR radio (at a very low pace though).
 
 🤓 Things I would like to learn soon: vector programming on x86 and GPU (SIMD) and deep learning applied on 5G receivers, such as the framework [Sionna](https://developer.nvidia.com/sionna)!
 
