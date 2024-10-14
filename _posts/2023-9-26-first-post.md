@@ -5,7 +5,7 @@ title: Welcome to my personal website!
 
 👋 Hi, I’m Alessandro Colazzo
 
-👀 I’m interested in signal processing for telecommunications (5G NR, LTE, NB-IoT) and IoT
+👀 I’m interested in cellular Radio Access Network standardizations and signal processing for telecommunications (5G NR, LTE, NB-IoT) and IoT
 
 🌱 I’m currently learning machine learning applied to the telco domain and playing with a tiny SDR radio (at a very low pace though).
 
