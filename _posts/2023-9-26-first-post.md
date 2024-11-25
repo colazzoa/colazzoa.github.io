@@ -13,7 +13,7 @@ title: Welcome to my personal website!
 
 💞️ I’m looking to collaborate on machine learning applied to physical layer processing of wireless protocols
 
-📜 Have a look on my [Publications](https://colazzoa.github.io/publications) !
+📜 Have a look at my [Publications](https://colazzoa.github.io/publications) !
 
 📫 Reach me on [Linkedin](https://www.linkedin.com/in/alessandrocolazzo)
 
