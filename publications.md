@@ -6,6 +6,12 @@ permalink: /publications/
 
 This is the list of publications I contributed to in the past. Where possible public link to the documents are available (last check on 26/3/2022)!
 
+
+## 2024
+### Advancing Energy Efficiency in 5G RAN: From Industry Standards to the Field
+2nd RESTART Tech Camp on 5G and Open RAN
+9-12 SEPTEMBER 2024 / MILANO
+
 ## 2018
 
 ### [5G CORAL Connected Cars Taiwan Trial Nov 2018](https://www.youtube.com/watch?v=5e8OWrCYPpQ) 
