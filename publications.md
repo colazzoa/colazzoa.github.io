@@ -8,8 +8,12 @@ This is the list of publications I contributed to in the past. Where possible pu
 
 
 ## 2024
+
+### [O-RAN Work Group 1 (Use Cases and Overall Architecture) Spectrum Aggregation for Multi-Vendor Deployments](https://specifications.o-ran.org/download?id=715)
+Represented JMA in contributing to the O-RAN ALLIANCE Technical Report, "Spectrum Aggregation for Multi-Vendor Deployments." The report analyzes various spectrum aggregation methods and introduces an open interface specification to facilitate carrier aggregation between Distributed Units (DUs) in multi-vendor environments.
+
 ### Advancing Energy Efficiency in 5G RAN: From Industry Standards to the Field
-2nd RESTART Tech Camp on 5G and Open RAN
+Presentation @ 2nd RESTART Tech Camp on 5G and Open RAN
 9-12 SEPTEMBER 2024 / MILANO
 
 ## 2018
