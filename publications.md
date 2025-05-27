@@ -7,6 +7,10 @@ permalink: /publications/
 This is the list of publications I contributed to in the past. Where possible public links to the documents are available.
 
 
+## 2025
+
+### [O-RAN Enabling 5G Private Networks]()
+
 ## 2024
 
 ### [O-RAN Work Group 1 (Use Cases and Overall Architecture) Spectrum Aggregation for Multi-Vendor Deployments](https://specifications.o-ran.org/download?id=715)
