@@ -9,7 +9,8 @@ This is the list of publications I contributed to in the past. Where possible pu
 
 ## 2025
 
-### [O-RAN Enabling 5G Private Networks]()
+### [O-RAN Enabling 5G Private Networks](https://mediastorage.o-ran.org/ecosystem-resources/O-RAN-Ecosystem-2025.04.02.WP.PrivateNetworks-v03.3.pdf)
+The open interface specifications produced by the O-RAN ALLIANCE are gaining significant adoption across industry verticals, bringing the benefits of interoperability, flexibility, and innovation, while contributing to cost reduction, scalability, and enhanced security. This white paper explores the adoption of the O-RAN architecture for 5G Private Networks, emphasizing the advantages it offers in terms of openness, intelligence, and automation.
 
 ## 2024
 
