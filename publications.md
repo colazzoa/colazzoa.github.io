@@ -4,7 +4,7 @@ title: Publications
 permalink: /publications/
 ---
 
-This is the list of publications I contributed to in the past. Where possible public links to the documents are available.
+This is the list of publications I have contributed to in the past. Where available, public links to the documents are included.
 
 
 ## 2025
