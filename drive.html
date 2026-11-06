@@ -270,11 +270,55 @@ sitemap: false
       url = base + "?alt=media";
     }
 
+    var headers = { Authorization: "Bearer " + token.access_token };
+
+    // File binari su browser compatibili (Chrome/Edge): scrittura in streaming
+    // su disco, senza caricare il file in memoria e senza aprire schede.
+    // showSaveFilePicker va chiamato subito, dentro il gesto del clic.
+    if (!isGoogleDoc && window.showSaveFilePicker) {
+      streamToDisk(url, filename, headers, btn, f.name);
+      return;
+    }
+
+    // Fallback (export Google, o browser senza File System Access API): in memoria.
+    blobDownload(url, filename, headers, btn, f.name);
+  }
+
+  function streamToDisk(url, filename, headers, btn, label) {
+    var pickerPromise;
+    try {
+      pickerPromise = window.showSaveFilePicker({ suggestedName: filename });
+    } catch (e) {
+      blobDownload(url, filename, headers, btn, label); return;
+    }
+    var oldLabel = btn ? btn.textContent : null;
+    var writable = null;
+    pickerPromise
+      .then(function (handle) { return handle.createWritable(); })
+      .then(function (w) {
+        writable = w;
+        if (btn) { btn.disabled = true; btn.textContent = "…"; }
+        setStatus("Scarico «" + label + "»…");
+        return fetch(url, { headers: headers });
+      })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.body.pipeTo(writable); // streaming chunk-by-chunk
+      })
+      .then(function () { setStatus("Scaricato: " + filename); })
+      .catch(function (e) {
+        if (writable) { try { writable.abort(); } catch (_) {} }
+        if (e && e.name === "AbortError") { setStatus("Download annullato."); return; }
+        setStatus("Download fallito: " + e.message, true);
+      })
+      .finally(function () { if (btn) { btn.disabled = false; btn.textContent = oldLabel; } });
+  }
+
+  function blobDownload(url, filename, headers, btn, label) {
     var oldLabel = btn ? btn.textContent : null;
     if (btn) { btn.disabled = true; btn.textContent = "…"; }
-    setStatus("Scarico «" + f.name + "»…");
-
-    fetch(url, { headers: { Authorization: "Bearer " + token.access_token } })
+    setStatus("Scarico «" + label + "»…");
+    fetch(url, { headers: headers })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.blob(); })
       .then(function (blob) {
         var objUrl = URL.createObjectURL(blob);
