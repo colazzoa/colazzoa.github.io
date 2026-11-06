@@ -190,7 +190,7 @@ sitemap: false
       q: q,
       pageSize: 200,
       orderBy: "folder,name",
-      fields: "files(id,name,mimeType,iconLink,modifiedTime,webViewLink,webContentLink)"
+      fields: "files(id,name,mimeType,iconLink,modifiedTime,webViewLink)"
     }).then(function (resp) {
       render(resp.result.files || []);
     }, function (err) {
@@ -267,20 +267,7 @@ sitemap: false
       url = base + "/export?mimeType=" + encodeURIComponent(exp.mime);
       if (filename.slice(-exp.ext.length).toLowerCase() !== exp.ext) filename += exp.ext;
     } else {
-      // File binario (zip, 7z, video, PDF, ecc.): se disponibile usa il link di
-      // download nativo di Google, così il browser scarica direttamente su disco
-      // in streaming, senza caricare tutto in memoria (nessun limite di dimensione).
-      if (f.webContentLink) {
-        var link = document.createElement("a");
-        link.href = f.webContentLink;
-        link.target = "_blank";
-        link.rel = "noopener";
-        document.body.appendChild(link); link.click(); link.remove();
-        setStatus("Download di «" + f.name + "» avviato (gestito dal browser). " +
-                  "Per file molto grandi Google può chiedere una conferma in una nuova scheda.");
-        return;
-      }
-      url = base + "?alt=media"; // fallback via API (in memoria)
+      url = base + "?alt=media";
     }
 
     var oldLabel = btn ? btn.textContent : null;
