@@ -8,16 +8,10 @@ sitemap: false
 {% raw %}
 <style>
   .drive-app { max-width: 820px; }
-  .drive-app h2 { margin-top: 1.4em; }
   .drive-app .muted { color: #828282; font-size: 0.9em; }
   .drive-app .card {
     border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px 18px;
     margin: 14px 0; background: #fafafa;
-  }
-  .drive-app label { display: block; font-weight: 600; margin: 10px 0 4px; font-size: 0.9em; }
-  .drive-app input[type=text], .drive-app input[type=search] {
-    width: 100%; box-sizing: border-box; padding: 8px 10px;
-    border: 1px solid #ccc; border-radius: 6px; font-size: 0.95em; font-family: inherit;
   }
   .drive-app button {
     cursor: pointer; border: none; border-radius: 6px; padding: 9px 16px;
@@ -25,8 +19,12 @@ sitemap: false
   }
   .drive-app button.secondary { background: #e8e8e8; color: #333; }
   .drive-app button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .drive-app .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
+  .drive-app .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 4px 0 14px; }
   .drive-app .toolbar .spacer { flex: 1 1 auto; }
+  .drive-app input[type=search] {
+    box-sizing: border-box; padding: 8px 10px; border: 1px solid #ccc;
+    border-radius: 6px; font-size: 0.95em; font-family: inherit;
+  }
   .drive-app .crumbs { font-size: 0.9em; margin: 10px 0; color: #4285f4; }
   .drive-app .crumbs a { cursor: pointer; }
   .drive-app ul.files { list-style: none; margin: 0; padding: 0; }
@@ -47,9 +45,6 @@ sitemap: false
   .drive-app ul.files .dl:hover { background: #d7d7d7; }
   .drive-app .status { font-size: 0.9em; margin: 10px 0; }
   .drive-app .status.err { color: #c0392b; }
-  .drive-app details { margin: 10px 0; }
-  .drive-app summary { cursor: pointer; font-weight: 600; }
-  .drive-app ol { font-size: 0.9em; line-height: 1.5; }
 </style>
 
 <div class="drive-app">
@@ -59,40 +54,7 @@ sitemap: false
     tutto avviene nel tuo browser tramite le API ufficiali di Google.
   </p>
 
-  <!-- ===== Setup: credenziali (salvate solo nel tuo browser) ===== -->
-  <div class="card" id="setup">
-    <strong>1. Configurazione (una sola volta)</strong>
-    <p class="muted">
-      Inserisci il tuo <em>OAuth Client ID</em> e la tua <em>API Key</em> creati sulla
-      Google Cloud Console. Vengono salvati solo nel tuo browser (localStorage), non nel sito.
-    </p>
-    <label for="clientId">OAuth Client ID</label>
-    <input type="text" id="clientId" placeholder="xxxxxxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false">
-    <label for="apiKey">API Key</label>
-    <input type="text" id="apiKey" placeholder="AIza..." autocomplete="off" spellcheck="false">
-    <div style="margin-top:12px;">
-      <button id="saveCfg">Salva configurazione</button>
-      <button class="secondary" id="clearCfg">Cancella</button>
-    </div>
-
-    <details>
-      <summary>Come ottenere Client ID e API Key</summary>
-      <ol>
-        <li>Vai su <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> e crea (o seleziona) un progetto.</li>
-        <li>In <em>APIs &amp; Services → Library</em> abilita la <strong>Google Drive API</strong>.</li>
-        <li>In <em>APIs &amp; Services → Credentials</em> crea una <strong>API Key</strong>.</li>
-        <li>Sempre in <em>Credentials</em> crea un <strong>OAuth client ID</strong> di tipo
-            <em>Web application</em>. In <em>Authorized JavaScript origins</em> aggiungi l'URL
-            di questo sito (es. <code id="originHint">https://…</code>).</li>
-        <li>Configura la <em>OAuth consent screen</em> e aggiungi il tuo indirizzo Google come
-            <em>Test user</em> (se l'app è in modalità Testing).</li>
-      </ol>
-    </details>
-  </div>
-
-  <!-- ===== Login + file browser ===== -->
   <div class="card">
-    <strong>2. Accedi e sfoglia</strong>
     <div class="toolbar">
       <button id="authorize" disabled>Accedi con Google</button>
       <button class="secondary" id="signout" style="display:none;">Esci</button>
@@ -100,7 +62,7 @@ sitemap: false
       <input type="search" id="search" placeholder="Cerca nel Drive…" style="max-width:240px;" disabled>
     </div>
     <div class="crumbs" id="crumbs"></div>
-    <div class="status" id="status">Configura le credenziali qui sopra per iniziare.</div>
+    <div class="status" id="status">Carico le librerie di Google…</div>
     <ul class="files" id="files"></ul>
   </div>
 </div>
@@ -113,55 +75,28 @@ sitemap: false
 
   var DISCOVERY = "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest";
   var SCOPES = "https://www.googleapis.com/auth/drive.readonly";
-  var LS = { id: "drive_client_id", key: "drive_api_key" };
 
   // Identificatori pubblici dell'app (NON sono segreti: protetti dalle
-  // restrizioni impostate su Google Cloud Console). Sovrascrivibili da localStorage.
-  var DEFAULT_ID = "846163282634-meo6e05d65j40ov4l55t2ilen2mqhuee.apps.googleusercontent.com";
-  var DEFAULT_KEY = "AIzaSyD9mxJ8RGM01ii9hm9Ug6aiTf_hJHwGKHo";
+  // restrizioni impostate su Google Cloud Console).
+  var CLIENT_ID = "846163282634-meo6e05d65j40ov4l55t2ilen2mqhuee.apps.googleusercontent.com";
+  var API_KEY = "AIzaSyD9mxJ8RGM01ii9hm9Ug6aiTf_hJHwGKHo";
 
   var gapiReady = false, gisReady = false, tokenClient = null, initialized = false;
   var folderStack = [{ id: "root", name: "Il mio Drive" }];
 
   var $ = function (id) { return document.getElementById(id); };
 
-  // ---- config -------------------------------------------------------------
-  function loadCfg() {
-    $("clientId").value = localStorage.getItem(LS.id) || DEFAULT_ID;
-    $("apiKey").value = localStorage.getItem(LS.key) || DEFAULT_KEY;
-    var oh = $("originHint"); if (oh) oh.textContent = window.location.origin;
-  }
-  function cfg() {
-    return {
-      id: localStorage.getItem(LS.id) || DEFAULT_ID,
-      key: localStorage.getItem(LS.key) || DEFAULT_KEY
-    };
-  }
-  $("saveCfg").onclick = function () {
-    var id = $("clientId").value.trim(), key = $("apiKey").value.trim();
-    if (!id || !key) { setStatus("Inserisci sia Client ID che API Key.", true); return; }
-    localStorage.setItem(LS.id, id); localStorage.setItem(LS.key, key);
-    setStatus("Configurazione salvata. Carico Google…");
-    maybeInit();
-  };
-  $("clearCfg").onclick = function () {
-    localStorage.removeItem(LS.id); localStorage.removeItem(LS.key);
-    loadCfg(); location.reload();
-  };
-
-  // ---- status -------------------------------------------------------------
   function setStatus(msg, isErr) {
     var el = $("status"); el.textContent = msg || "";
     el.className = "status" + (isErr ? " err" : "");
   }
 
   // ---- library load hooks -------------------------------------------------
-  window.gapiLoaded = function () {
-    gapi.load("client", function () { gapiReady = true; maybeInit(); });
-  };
-  // api.js may already be loaded; poll until gapi is present
   var waitGapi = setInterval(function () {
-    if (window.gapi) { clearInterval(waitGapi); window.gapiLoaded(); }
+    if (window.gapi) {
+      clearInterval(waitGapi);
+      gapi.load("client", function () { gapiReady = true; maybeInit(); });
+    }
   }, 100);
   var waitGis = setInterval(function () {
     if (window.google && google.accounts && google.accounts.oauth2) {
@@ -170,17 +105,12 @@ sitemap: false
   }, 100);
 
   function maybeInit() {
-    var c = cfg();
-    if (!c.id || !c.key) { setStatus("Configura le credenziali qui sopra per iniziare."); return; }
-    if (!gapiReady || !gisReady || initialized) {
-      if (!initialized) setStatus("Carico le librerie di Google…");
-      if (!gapiReady || !gisReady) return;
-    }
+    if (!gapiReady || !gisReady) return;
     if (initialized) { $("authorize").disabled = false; return; }
 
-    gapi.client.init({ apiKey: c.key, discoveryDocs: [DISCOVERY] }).then(function () {
+    gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY] }).then(function () {
       tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: c.id,
+        client_id: CLIENT_ID,
         scope: SCOPES,
         callback: function (resp) {
           if (resp.error) { setStatus("Errore di accesso: " + resp.error, true); return; }
@@ -194,7 +124,7 @@ sitemap: false
       $("authorize").disabled = false;
       setStatus("Pronto. Clicca «Accedi con Google».");
     }, function (err) {
-      setStatus("Impossibile inizializzare le API (controlla l'API Key): " +
+      setStatus("Impossibile inizializzare le API: " +
                 (err && err.details ? err.details : JSON.stringify(err)), true);
     });
   }
@@ -357,9 +287,6 @@ sitemap: false
       .catch(function (e) { setStatus("Download fallito: " + e.message, true); })
       .finally(function () { if (btn) { btn.disabled = false; btn.textContent = oldLabel; } });
   }
-
-  // ---- init ---------------------------------------------------------------
-  loadCfg();
 })();
 </script>
 {% endraw %}
