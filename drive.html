@@ -115,6 +115,11 @@ sitemap: false
   var SCOPES = "https://www.googleapis.com/auth/drive.readonly";
   var LS = { id: "drive_client_id", key: "drive_api_key" };
 
+  // Identificatori pubblici dell'app (NON sono segreti: protetti dalle
+  // restrizioni impostate su Google Cloud Console). Sovrascrivibili da localStorage.
+  var DEFAULT_ID = "846163282634-meo6e05d65j40ov4l55t2ilen2mqhuee.apps.googleusercontent.com";
+  var DEFAULT_KEY = "AIzaSyD9mxJ8RGM01ii9hm9Ug6aiTf_hJHwGKHo";
+
   var gapiReady = false, gisReady = false, tokenClient = null, initialized = false;
   var folderStack = [{ id: "root", name: "Il mio Drive" }];
 
@@ -122,12 +127,15 @@ sitemap: false
 
   // ---- config -------------------------------------------------------------
   function loadCfg() {
-    $("clientId").value = localStorage.getItem(LS.id) || "";
-    $("apiKey").value = localStorage.getItem(LS.key) || "";
+    $("clientId").value = localStorage.getItem(LS.id) || DEFAULT_ID;
+    $("apiKey").value = localStorage.getItem(LS.key) || DEFAULT_KEY;
     var oh = $("originHint"); if (oh) oh.textContent = window.location.origin;
   }
   function cfg() {
-    return { id: localStorage.getItem(LS.id), key: localStorage.getItem(LS.key) };
+    return {
+      id: localStorage.getItem(LS.id) || DEFAULT_ID,
+      key: localStorage.getItem(LS.key) || DEFAULT_KEY
+    };
   }
   $("saveCfg").onclick = function () {
     var id = $("clientId").value.trim(), key = $("apiKey").value.trim();
