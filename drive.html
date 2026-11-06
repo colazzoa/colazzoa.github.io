@@ -40,6 +40,11 @@ sitemap: false
   .drive-app ul.files .name a { color: #333; text-decoration: none; }
   .drive-app ul.files .folder .name { font-weight: 600; cursor: pointer; color: #4285f4; }
   .drive-app ul.files .date { flex: 0 0 auto; color: #999; font-size: 0.82em; }
+  .drive-app ul.files .dl {
+    flex: 0 0 auto; background: #e8e8e8; color: #333; border-radius: 6px;
+    padding: 2px 11px; font-size: 1em; line-height: 1.4;
+  }
+  .drive-app ul.files .dl:hover { background: #d7d7d7; }
   .drive-app .status { font-size: 0.9em; margin: 10px 0; }
   .drive-app .status.err { color: #c0392b; }
   .drive-app details { margin: 10px 0; }
@@ -285,8 +290,64 @@ sitemap: false
       if (f.modifiedTime) date.textContent = new Date(f.modifiedTime).toLocaleDateString();
       li.appendChild(date);
 
+      if (!isFolder) {
+        var dl = document.createElement("button");
+        dl.className = "dl"; dl.title = "Scarica"; dl.textContent = "⤓";
+        dl.onclick = function () { downloadFile(f, dl); };
+        li.appendChild(dl);
+      }
+
       ul.appendChild(li);
     });
+  }
+
+  // ---- download -----------------------------------------------------------
+  var EXPORT_MAP = {
+    "application/vnd.google-apps.document":
+      { mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ext: ".docx" },
+    "application/vnd.google-apps.spreadsheet":
+      { mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ext: ".xlsx" },
+    "application/vnd.google-apps.presentation":
+      { mime: "application/vnd.openxmlformats-officedocument.presentationml.presentation", ext: ".pptx" },
+    "application/vnd.google-apps.drawing": { mime: "image/png", ext: ".png" }
+  };
+
+  function downloadFile(f, btn) {
+    var token = gapi.client.getToken();
+    if (!token) { setStatus("Devi prima accedere.", true); return; }
+
+    var base = "https://www.googleapis.com/drive/v3/files/" + encodeURIComponent(f.id);
+    var url, filename = f.name;
+    var isGoogleDoc = f.mimeType.indexOf("application/vnd.google-apps.") === 0;
+
+    if (isGoogleDoc) {
+      var exp = EXPORT_MAP[f.mimeType];
+      if (!exp) {
+        setStatus("Questo tipo di file Google non si può scaricare direttamente: aprilo dal nome.", true);
+        return;
+      }
+      url = base + "/export?mimeType=" + encodeURIComponent(exp.mime);
+      if (filename.slice(-exp.ext.length).toLowerCase() !== exp.ext) filename += exp.ext;
+    } else {
+      url = base + "?alt=media";
+    }
+
+    var oldLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = "…"; }
+    setStatus("Scarico «" + f.name + "»…");
+
+    fetch(url, { headers: { Authorization: "Bearer " + token.access_token } })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.blob(); })
+      .then(function (blob) {
+        var objUrl = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = objUrl; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(objUrl); }, 5000);
+        setStatus("Scaricato: " + filename);
+      })
+      .catch(function (e) { setStatus("Download fallito: " + e.message, true); })
+      .finally(function () { if (btn) { btn.disabled = false; btn.textContent = oldLabel; } });
   }
 
   // ---- init ---------------------------------------------------------------
