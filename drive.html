@@ -1,0 +1,296 @@
+---
+layout: default
+title: My Drive
+permalink: /drive/
+sitemap: false
+---
+
+{% raw %}
+<style>
+  .drive-app { max-width: 820px; }
+  .drive-app h2 { margin-top: 1.4em; }
+  .drive-app .muted { color: #828282; font-size: 0.9em; }
+  .drive-app .card {
+    border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px 18px;
+    margin: 14px 0; background: #fafafa;
+  }
+  .drive-app label { display: block; font-weight: 600; margin: 10px 0 4px; font-size: 0.9em; }
+  .drive-app input[type=text], .drive-app input[type=search] {
+    width: 100%; box-sizing: border-box; padding: 8px 10px;
+    border: 1px solid #ccc; border-radius: 6px; font-size: 0.95em; font-family: inherit;
+  }
+  .drive-app button {
+    cursor: pointer; border: none; border-radius: 6px; padding: 9px 16px;
+    font-size: 0.95em; font-family: inherit; background: #4285f4; color: #fff;
+  }
+  .drive-app button.secondary { background: #e8e8e8; color: #333; }
+  .drive-app button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .drive-app .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
+  .drive-app .toolbar .spacer { flex: 1 1 auto; }
+  .drive-app .crumbs { font-size: 0.9em; margin: 10px 0; color: #4285f4; }
+  .drive-app .crumbs a { cursor: pointer; }
+  .drive-app ul.files { list-style: none; margin: 0; padding: 0; }
+  .drive-app ul.files li {
+    display: flex; align-items: center; gap: 12px; padding: 10px 6px;
+    border-bottom: 1px solid #eee;
+  }
+  .drive-app ul.files li:hover { background: #f5f8ff; }
+  .drive-app ul.files img.ic { width: 20px; height: 20px; flex: 0 0 auto; }
+  .drive-app ul.files .name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .drive-app ul.files .name a { color: #333; text-decoration: none; }
+  .drive-app ul.files .folder .name { font-weight: 600; cursor: pointer; color: #4285f4; }
+  .drive-app ul.files .date { flex: 0 0 auto; color: #999; font-size: 0.82em; }
+  .drive-app .status { font-size: 0.9em; margin: 10px 0; }
+  .drive-app .status.err { color: #c0392b; }
+  .drive-app details { margin: 10px 0; }
+  .drive-app summary { cursor: pointer; font-weight: 600; }
+  .drive-app ol { font-size: 0.9em; line-height: 1.5; }
+</style>
+
+<div class="drive-app">
+  <p class="muted">
+    Questa pagina mostra i file del <strong>tuo</strong> Google Drive dopo che accedi
+    con il tuo account Google. I dati restano privati: nulla viene salvato sul sito,
+    tutto avviene nel tuo browser tramite le API ufficiali di Google.
+  </p>
+
+  <!-- ===== Setup: credenziali (salvate solo nel tuo browser) ===== -->
+  <div class="card" id="setup">
+    <strong>1. Configurazione (una sola volta)</strong>
+    <p class="muted">
+      Inserisci il tuo <em>OAuth Client ID</em> e la tua <em>API Key</em> creati sulla
+      Google Cloud Console. Vengono salvati solo nel tuo browser (localStorage), non nel sito.
+    </p>
+    <label for="clientId">OAuth Client ID</label>
+    <input type="text" id="clientId" placeholder="xxxxxxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false">
+    <label for="apiKey">API Key</label>
+    <input type="text" id="apiKey" placeholder="AIza..." autocomplete="off" spellcheck="false">
+    <div style="margin-top:12px;">
+      <button id="saveCfg">Salva configurazione</button>
+      <button class="secondary" id="clearCfg">Cancella</button>
+    </div>
+
+    <details>
+      <summary>Come ottenere Client ID e API Key</summary>
+      <ol>
+        <li>Vai su <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> e crea (o seleziona) un progetto.</li>
+        <li>In <em>APIs &amp; Services → Library</em> abilita la <strong>Google Drive API</strong>.</li>
+        <li>In <em>APIs &amp; Services → Credentials</em> crea una <strong>API Key</strong>.</li>
+        <li>Sempre in <em>Credentials</em> crea un <strong>OAuth client ID</strong> di tipo
+            <em>Web application</em>. In <em>Authorized JavaScript origins</em> aggiungi l'URL
+            di questo sito (es. <code id="originHint">https://…</code>).</li>
+        <li>Configura la <em>OAuth consent screen</em> e aggiungi il tuo indirizzo Google come
+            <em>Test user</em> (se l'app è in modalità Testing).</li>
+      </ol>
+    </details>
+  </div>
+
+  <!-- ===== Login + file browser ===== -->
+  <div class="card">
+    <strong>2. Accedi e sfoglia</strong>
+    <div class="toolbar">
+      <button id="authorize" disabled>Accedi con Google</button>
+      <button class="secondary" id="signout" style="display:none;">Esci</button>
+      <span class="spacer"></span>
+      <input type="search" id="search" placeholder="Cerca nel Drive…" style="max-width:240px;" disabled>
+    </div>
+    <div class="crumbs" id="crumbs"></div>
+    <div class="status" id="status">Configura le credenziali qui sopra per iniziare.</div>
+    <ul class="files" id="files"></ul>
+  </div>
+</div>
+
+<script src="https://apis.google.com/js/api.js" async defer></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+(function () {
+  "use strict";
+
+  var DISCOVERY = "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest";
+  var SCOPES = "https://www.googleapis.com/auth/drive.readonly";
+  var LS = { id: "drive_client_id", key: "drive_api_key" };
+
+  var gapiReady = false, gisReady = false, tokenClient = null, initialized = false;
+  var folderStack = [{ id: "root", name: "Il mio Drive" }];
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---- config -------------------------------------------------------------
+  function loadCfg() {
+    $("clientId").value = localStorage.getItem(LS.id) || "";
+    $("apiKey").value = localStorage.getItem(LS.key) || "";
+    var oh = $("originHint"); if (oh) oh.textContent = window.location.origin;
+  }
+  function cfg() {
+    return { id: localStorage.getItem(LS.id), key: localStorage.getItem(LS.key) };
+  }
+  $("saveCfg").onclick = function () {
+    var id = $("clientId").value.trim(), key = $("apiKey").value.trim();
+    if (!id || !key) { setStatus("Inserisci sia Client ID che API Key.", true); return; }
+    localStorage.setItem(LS.id, id); localStorage.setItem(LS.key, key);
+    setStatus("Configurazione salvata. Carico Google…");
+    maybeInit();
+  };
+  $("clearCfg").onclick = function () {
+    localStorage.removeItem(LS.id); localStorage.removeItem(LS.key);
+    loadCfg(); location.reload();
+  };
+
+  // ---- status -------------------------------------------------------------
+  function setStatus(msg, isErr) {
+    var el = $("status"); el.textContent = msg || "";
+    el.className = "status" + (isErr ? " err" : "");
+  }
+
+  // ---- library load hooks -------------------------------------------------
+  window.gapiLoaded = function () {
+    gapi.load("client", function () { gapiReady = true; maybeInit(); });
+  };
+  // api.js may already be loaded; poll until gapi is present
+  var waitGapi = setInterval(function () {
+    if (window.gapi) { clearInterval(waitGapi); window.gapiLoaded(); }
+  }, 100);
+  var waitGis = setInterval(function () {
+    if (window.google && google.accounts && google.accounts.oauth2) {
+      clearInterval(waitGis); gisReady = true; maybeInit();
+    }
+  }, 100);
+
+  function maybeInit() {
+    var c = cfg();
+    if (!c.id || !c.key) { setStatus("Configura le credenziali qui sopra per iniziare."); return; }
+    if (!gapiReady || !gisReady || initialized) {
+      if (!initialized) setStatus("Carico le librerie di Google…");
+      if (!gapiReady || !gisReady) return;
+    }
+    if (initialized) { $("authorize").disabled = false; return; }
+
+    gapi.client.init({ apiKey: c.key, discoveryDocs: [DISCOVERY] }).then(function () {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: c.id,
+        scope: SCOPES,
+        callback: function (resp) {
+          if (resp.error) { setStatus("Errore di accesso: " + resp.error, true); return; }
+          $("signout").style.display = "";
+          $("search").disabled = false;
+          folderStack = [{ id: "root", name: "Il mio Drive" }];
+          listFiles();
+        }
+      });
+      initialized = true;
+      $("authorize").disabled = false;
+      setStatus("Pronto. Clicca «Accedi con Google».");
+    }, function (err) {
+      setStatus("Impossibile inizializzare le API (controlla l'API Key): " +
+                (err && err.details ? err.details : JSON.stringify(err)), true);
+    });
+  }
+
+  // ---- auth buttons -------------------------------------------------------
+  $("authorize").onclick = function () {
+    if (!tokenClient) { setStatus("Non ancora pronto, riprova tra un istante.", true); return; }
+    var token = gapi.client.getToken();
+    tokenClient.requestAccessToken({ prompt: token ? "" : "consent" });
+  };
+  $("signout").onclick = function () {
+    var token = gapi.client.getToken();
+    if (token) {
+      google.accounts.oauth2.revoke(token.access_token, function () {});
+      gapi.client.setToken(null);
+    }
+    $("signout").style.display = "none";
+    $("search").disabled = true; $("search").value = "";
+    $("files").innerHTML = ""; $("crumbs").innerHTML = "";
+    setStatus("Disconnesso.");
+  };
+
+  // ---- navigation / search ------------------------------------------------
+  var searchTimer = null;
+  $("search").oninput = function () {
+    clearTimeout(searchTimer);
+    var term = this.value.trim();
+    searchTimer = setTimeout(function () {
+      if (term) searchFiles(term); else listFiles();
+    }, 350);
+  };
+
+  function renderCrumbs() {
+    var c = $("crumbs"); c.innerHTML = "";
+    folderStack.forEach(function (f, i) {
+      if (i > 0) c.appendChild(document.createTextNode(" / "));
+      if (i < folderStack.length - 1) {
+        var a = document.createElement("a");
+        a.textContent = f.name;
+        a.onclick = function () { folderStack = folderStack.slice(0, i + 1); listFiles(); };
+        c.appendChild(a);
+      } else {
+        c.appendChild(document.createTextNode(f.name));
+      }
+    });
+  }
+
+  function current() { return folderStack[folderStack.length - 1]; }
+
+  function listFiles() {
+    renderCrumbs();
+    query("'" + current().id + "' in parents and trashed = false");
+  }
+  function searchFiles(term) {
+    $("crumbs").innerHTML = "";
+    var safe = term.replace(/'/g, "\\'");
+    query("name contains '" + safe + "' and trashed = false");
+  }
+
+  function query(q) {
+    setStatus("Carico…");
+    gapi.client.drive.files.list({
+      q: q,
+      pageSize: 200,
+      orderBy: "folder,name",
+      fields: "files(id,name,mimeType,iconLink,modifiedTime,webViewLink)"
+    }).then(function (resp) {
+      render(resp.result.files || []);
+    }, function (err) {
+      var msg = err && err.result && err.result.error ? err.result.error.message : JSON.stringify(err);
+      setStatus("Errore nel caricamento: " + msg, true);
+    });
+  }
+
+  function render(files) {
+    var ul = $("files"); ul.innerHTML = "";
+    if (!files.length) { setStatus("Nessun file qui."); return; }
+    setStatus(files.length + " elementi.");
+    files.forEach(function (f) {
+      var isFolder = f.mimeType === "application/vnd.google-apps.folder";
+      var li = document.createElement("li");
+      if (isFolder) li.className = "folder";
+
+      var ic = document.createElement("img"); ic.className = "ic";
+      ic.src = f.iconLink || ""; ic.alt = "";
+      li.appendChild(ic);
+
+      var name = document.createElement("span"); name.className = "name";
+      if (isFolder) {
+        name.textContent = f.name;
+        name.onclick = function () { folderStack.push({ id: f.id, name: f.name }); listFiles(); };
+      } else {
+        var a = document.createElement("a");
+        a.textContent = f.name;
+        a.href = f.webViewLink || "#"; a.target = "_blank"; a.rel = "noopener";
+        name.appendChild(a);
+      }
+      li.appendChild(name);
+
+      var date = document.createElement("span"); date.className = "date";
+      if (f.modifiedTime) date.textContent = new Date(f.modifiedTime).toLocaleDateString();
+      li.appendChild(date);
+
+      ul.appendChild(li);
+    });
+  }
+
+  // ---- init ---------------------------------------------------------------
+  loadCfg();
+})();
+</script>
+{% endraw %}
